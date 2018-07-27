@@ -234,6 +234,3 @@ src 目录下面的**base-components**、**js**封装的基础组件和常用方
    当我修改base工程里面的代码时候。base工程也有热部署，rollup自动构建。mobile工程webpack监听到xxx-front-base有所变化，也会重载，无需重新安装
    是不是很方便，hahhhhh
 
-
-http://192.168.5.5:10080/taild/gxyun-front-base.git
-
