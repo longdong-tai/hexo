@@ -54,19 +54,23 @@ function query {
 1、所有以delete开头的方法，自动运用删除提示代理
 2、通过明确的配置，实现代理
 
-两个各有优缺点
-1、优点：
-   - 无需配置，使用简单
-   缺点：
-   - 不明确，毕竟JavaScript没有Java的注解
-   - 需要代理实现遍历所有的methods方法，做相应名称匹配，很有可能会误操作。
-   - 不利于扩展，无法传递给代理方法参数。以后增加各种代理需求，会很复杂
-2、优点：
-    - 配置明确、一目了然
-    - 参数可以自定义
-   缺点：
-    - 需要配置，有点麻烦
-    - 配置会污染vue.js的属性
+两个各有优缺点:
+###### 自动判断
+- 优点：
+  - 无需配置，使用简单
+- 缺点：
+  - 不明确，毕竟JavaScript没有Java的注解
+  - 需要代理实现遍历所有的methods方法，做相应名称匹配，很有可能会误操作。
+  - 不利于扩展，无法传递给代理方法参数。以后增加各种代理需求，会很复杂
+
+###### 配置文件
+
+- 优点：
+  - 配置明确、一目了然
+  - 参数可以自定义
+- 缺点：
+  - 需要配置，有点麻烦
+  - 配置会污染vue.js的属性
 
 各方权衡，选择配置的方式，自动遍历代理不利于代码阅读和理解，就像机关暗门藏在里面。当然，没有什么比一目了然的代码更让人喜欢。至于配置会污染vue.js的属性。这里可采用一个命名空间的方式。以公司名称（或缩写）做属性，就算以后和vue冲突（概率很低）,也方便修改
 
@@ -196,7 +200,7 @@ customVuePlugin.js
  }
 ```
 **最为关键的一句proxyFactory.getProxyMethod(proxyType)**
-参数proxyType就是confirm代理类型。这句话就是从代理工厂中获取代理类型为'confirm'的代理方法，这里有点绕口
+参数proxyType就是confirm代理类型。这句话就是从代理工厂中获取代理类型为proxyType(比如'confirm')的代理方法，这里有点绕口
 proxy-factory.js
 ```js
 class ProxyFactory {
@@ -235,9 +239,11 @@ import confirm from './confirm-proxy.js'
 
 proxyFactory.register(confirm.name,confirm.fn)
 ```
-这样上面vue插件中的
+这样上面vue插件中的(proxyFactory.getProxyMethod)这句话就有了着落,能够从中获取到对应代理方法，因为后面注册了
 let proxyMethod = proxyFactory.getProxyMethod(proxyType) // 从代理工厂中获取相应的代理方法
-上面这句话就有了着落
+
+###### 注:有一点要提示下的、代码import的先后顺序要注意。但是beforeCreate里面的proxyFactory.getProxyMethod不用关注，因为一切准备妥当之后才 new vue(),所有只要你注册代理就可以
+
 为了便于管理，应该新建一个目录假设叫vue-method-proxy（你可以任意取），专门用来存放各种代理的实现，并提供一个入口index.js
 
 index.js
@@ -326,8 +332,8 @@ export default {
 ```js
 export default {
   gxConfig:{
-     methodProxy: { // 故乡云代理配置
-       debounce: { // 代理的类型: confirm（二次确认，多用于删除之类的）。（注意：该代理需要手动注册，这是因为，移动端和pc端实现代理方式有差异）
+     methodProxy: { // 代理配置
+       debounce: { // 对queryList做debounce化处理
          methodNames: ['queryList'] // queryList方法需要被debounce化
        },
         params: { //
